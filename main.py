@@ -1,5 +1,5 @@
 import types
-
+from random import choice
 from config import BOT_TOKEN
 from aiogram.filters import Command
 from aiogram.types import Message
@@ -22,12 +22,7 @@ async def main():
 
      await message.answer(response_json['fact'])
 
- @dp.message(F.text)
- async def cat_text(message: Message):
-     print(f'[LOG] пользователь {message.from_user.id} написал текст')
-     print(f'[LOG] фильрую данный текст')
-     await message.answer('оч интересно')
-     print(f'[LOG] соо успешно обработалось со статусом {F.status_code}')
+
 
 
  @dp.message(Command(commands = ['breed']))
@@ -36,15 +31,27 @@ async def main():
      print(f'[LOG] запрашиваю породу кота')
      response = get('https://catfact.ninja/breeds')
      print(f'[LOG] получен результат со статусом {response.status_code}')
-     response_json = response.json
-     print(response_json['data'][0]['country'])
-     print(response_json['data'][0]['breed'])
+     response_json = response.json()
+
+     result_item = choice(response_json['data'])
+     country = choice(response_json['data'])
+     result = (f'случайная порода: {result_item['breed']} \n'
+               f'родина: {result_item['country']}')
+     await message.answer(result)
+     print(f'[LOG] запрос успешно отправлен пользователю {message.from_user.id}')
 
 
  @dp.message(Command(commands=['start']))
  async def start(message: Message):
      print(f'[LOG] пользователь {message.from_user.id} нажал кнопку /start')
      await message.answer(f'привет {message.from_user.full_name}')
+
+ @dp.message(F.text)
+ async def cat_text(message: Message):
+     print(f'[LOG] пользователь {message.from_user.id} написал текст')
+     print(f'[LOG] фильрую данный текст')
+     await message.answer('оч интересно')
+     print(f'[LOG] соо успешно обработалось со статусом {F.status_code}')
 
  await dp.start_polling(bot)
 
