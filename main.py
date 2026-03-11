@@ -6,32 +6,29 @@ from aiogram.types import Message
 from aiogram import Bot, Dispatcher,F
 from asyncio import run
 from requests import get
+import os
 
 async def main():
  bot = Bot(token=BOT_TOKEN)
  dp = Dispatcher()
 
- @dp.message(F.text.contains('start'))
- async def start_handler(message: Message):
-   await message.reply(f'ahoj {message.from_user.full_name}')
- @dp.message(Command(commands=['start']))
- async def start(message: Message):
-     print(f'[LOG] пользователь {message.from_user.id} нажал кнопку /start')
-     await message.answer(f'привет {message.from_user.full_name}')
 
 
- s ={5513935927, 6574836746, 1234567890}
- @dp.message( Command(commands= ['secret']), F.from_user.id.in_(s))
- async def secret(message: Message):
-     await message.answer(' ahoj ! ja som oki bot')
- @dp.message(not(F.user_name.id == 5513935927 | 6574836746 | 1234567890))
- async def message(message: Message):
-     await message.answer(' no')
+ @dp.message(F.video | F.photo)
+ async def get_video(message: Message, bot: Bot):
+     os.makedirs('downloads', exist_ok= True)
+     file = message.photo
+     if message.photo:
+         file = await bot.get_file(message.photo[-1].file_id)
+         PATH = os.path.join("downloads", f"{file.file_unique_id}.jpg")
+     else:
+         file = await bot.get_file(message.video[0].file_id)
+         PATH = os.path.join('downloads', f'{file.file_unique_id}.mp4')
+     await bot.download_file(file.file_id, destination= PATH)
 
+     await bot.download_file(file.file_id)
 
-
-
-
+     await message.answer('крутые фото или видео')
 
 
  await dp.start_polling(bot)
