@@ -2,76 +2,81 @@ import types
 from random import choice
 from config import BOT_TOKEN
 from aiogram.filters import Command
-from aiogram.types import Message
+from aiogram.types import Message , KeyboardButton, ReplyKeyboardMarkup, BotCommand
 from aiogram import Bot, Dispatcher,F
 import asyncio
+import click
 from requests import get
 import os
 from random import randint
+
 
 async def main():
     bot = Bot(token=BOT_TOKEN)
     dp = Dispatcher()
 
+    commands = [
+        BotCommand(command='/start', description='эта команда начинает бот'),
+        BotCommand(command= '/help', description='эта команда помогает'),
+        BotCommand(command= '/neperejivay', description='эта команда не переживает'),
+        BotCommand(command='/perejivaet', description='эта команда переживает')
+        ]
 
-    @dp.message(Command(commands = ['show']))
-    async def show_command(message: Message):
-        msg = await message.answer('загрузка')
-        with open('data.txt', 'w') as f:
-            f.write('curs:temperature\n')
-            for _ in range(10):
-                f.write(f'{randint(1,100)}:{randint(-30, 30)}\n')
-                with open('data.txt', 'r') as f:
-                    list_data = f.readlines()
-                    if len(list_data) <= 1:
-                        await message.answer('в файле нет данных')
-                for i in list_data[1:]:
-                    elements = i.split(':')
-                    await message.answer(f'текущая температура на улице: {elements[1]}')
-                    await asyncio.sleep(10)
+    await bot.set_my_commands(commands)
 
-    @dp.message(F.text.lower().endswith("контакт"))
-    async def contact_handler(message: Message):
-        print(f'[LOG] пользователь {message.from_user.id}  запросил контакт')
-        await message.answer()
-        await message.answer_contact(
-        phone_number = '+79052408500',
-        first_name ='Lafy' )
-        print('[LOG] запрос успешно завершен')
 
-    @dp.message(F.text.endswith("адрес"))
-    async def address_handler(message: Message):
-        await message.answer('да я знаю твой адрес берегись')
-        print(f'[LOG] пользователь {message.from_user.id}  запросил адрес')
-        await message.answer_location(
-            latitude = 54,
-            longitude = 22,
-        )
-        print('[LOG] запрос успешно завершен')
-    @dp.message(Command(commands = ['start']))
+
+    knopka_1 = KeyboardButton( text = 'command1')
+    knopka_2 = KeyboardButton( text = 'command2')
+    knopka_3 = KeyboardButton( text = 'command3')
+
+    keyboard = ReplyKeyboardMarkup(keyboard=[[knopka_1], [knopka_2, knopka_3],], # передаем туда кнопки, формируем клавиатуру
+                                             resize_keyboard=True, #сжалась кнопка до высоты текста и ширины экрана телефона
+                                   input_field_placeholder='пиши :3'
+                                   )
+
+    knopka_11 = KeyboardButton(text='гони фото')
+    keyboard_2 = ReplyKeyboardMarkup(keyboard=[[knopka_11]],
+                                   # передаем туда кнопки, формируем клавиатуру
+                                   resize_keyboard=True,  # сжалась кнопка до высоты текста и ширины экрана телефона
+                                   input_field_placeholder='пиши :3'
+                                   )
+
+    @dp.message(Command(commands= ['start']))
     async def start_handler(message: Message):
-        print(f'[LOG] пользователь {message.from_user.id}  применил функцию /start')
-        await message.answer('пр')
-        print("[LOG] ответ успешно отправлен пользователю")
+        await message.answer(
+            text = 'пр че как',
+            reply_markup = keyboard
+        )
 
-    @dp.message()
-    async def anything(message: Message):
-        print('[LOG] ')
-        await message.answer(message.text)
+    @dp.message(F.text == 'command2')
+    async def command2_handler(message: Message):
+        print('[LOG] команда 2 запускается')
+        await message.answer(
+            text = 'амфореус имба',
+            reply_markup = keyboard
+        )
 
-    @dp.message(Command(commands = 'silka'))
-    async def silka_handler(message: Message):
-        msg =  await message.answr('загрузка')
-        with open('phainon.txt', 'r') as f:
-            s = f.readlines()
-            for i in s[1:]:
-                nums, link = i.split(':')
-                await message.answer(f'ля ссылки {link}')
-                await asyncio.sleep(10)
-                await msg.edit_text(f'для ссылки {link} были загружены данные')
+    @dp.message(F.text == 'command1')
+    async def comand1(message: Message):
+        await message.answer(
+            text = 'i',
+            reply_markup = keyboard
+        )
 
+    @dp.message(F.text == 'command3')
+    async def comand3(message: Message):
+        await message.answer(
+            text = 'ЗАЗАЗАЗАЗАЗАЗАЗААЗАЗАЗАЗААЗАЗ отправь мне фото.',
+            reply_markup = keyboard
+        )
 
-
+    @dp.message(F.text == 'отправь фото')
+    async def command4(message: Message):
+        await message.answer_photo(
+            photo= 'https://i.ytimg.com/vi/UMd8Fd6wkds/maxresdefault.jpg?sqp=-oaymwEmCIAKENAF8quKqQMa8AEB-AH-CYAC0AWKAgwIABABGFcgWihlMA8=&rs=AOn4CLDDe_ZxXyDCbc0iNIYRbD0QD3bjdQ',
+            reply_markup = keyboard_2
+        )
 
 
 
