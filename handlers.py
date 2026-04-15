@@ -1,5 +1,5 @@
-from lexicons.lexicon import START_TEST_ANSW, START_TEST_BTN, QUESTIONS, RESULT_TEST_ANSW
-from keyboards.keyboards import get_menu_keyboards, get_answ_btns
+from lexicons.lexicon_ru import START_BTN_TEXT, COURSES_TEXT, COURSES_INFO
+from handlers.keyboards import menu_kb()
 from aiogram.types import CallbackQuery, InlineKeyboardButton, InlineKeyboardMarkup
 from aiogram.filters import Command
 from aiogram import F, Router
@@ -10,40 +10,16 @@ counter = 0
 user_answ = []
 
 
-@router.message(Command(commands="start"))
-async def start_handler(message: Message):
+@router.message(F.text == START_BTN_TEXT[0])
+async def courses_handler(message: Message):
     await message.answer(
-        START_TEST_ANSW,
-        reply_markup=await get_menu_keyboards()
+        COURSES_TEXT,
+        reply_markup = await menu_kb()
     )
 
+@router.callback_query(F.data.startswith('courses_'))
+async def menu_handler(data: CallbackQuery):
+    text = data.data
+    info_text = COURSES_INFO[text]
 
-@router.message(F.text == START_TEST_BTN)
-async def start_test_handler(message: Message):
-    quest = list(QUESTIONS[0].keys())[0]
-    btns_data = QUESTIONS[0][quest]
-    keyboard = await get_answ_btns(btns_data)
-
-    await message.answer(
-        quest,
-        reply_markup=keyboard
-    )
-
-
-@router.callback_query(F.data.startswith("question"))
-async def absw_handler(callback: CallbackQuery):
-    global counter, user_answ
-    data = callback.data
-    num = int(data.split("_")[1])
-    user_answ.append(num)
-    counter += 1
-    if counter == 3:
-        await callback.message.answer(RESULT_TEST_ANSW)
-    else:
-        answ = list(QUESTIONS[counter].keys())[0]
-        btns_data = QUESTIONS[counter]
-        keyboard = await get_answ_btns(btns_data)
-        await callback.message.answer(
-            text=answ,
-            reply_markup=keyboard
-        )
+    await data.message.edit_text(info_text)
